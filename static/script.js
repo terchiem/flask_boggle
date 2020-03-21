@@ -1,36 +1,47 @@
-$(function() {
-  const BASE_URL = "http://localhost:5000/"
-  $submitButton = $('#submit');
-  $guessInput = $('#guess');
-  $result = $('#result');
-  $gameOverMsg = $('#gameOverMsg')
-  let score =0;
+class BoggleGame{
+  constructor(time){
+    this.score=0;
+    this.time = 60000;
+    this.guessedWords = []
+    this.BASE_URL = "http://localhost:5000/"
+    setTimeout(endGame, this.time);
+    $('#submit').on('submit', this.handleButton.bind(this));
+  }
 
-  $submitButton.on('click', async function(e){
-    e.preventDefault();
-
-    let guess = $guessInput.val();
+  async sendGuess(guess){
     let response = await axios.get(`${BASE_URL}/make-guess?guess=${guess}`);
-    $guessInput.val("")
+    return response.data.result
+  }
 
-    // display result from JSON response
-    if(response.data.result =="ok"){
-      score+=guess.length
+  updateScore(serverResponse, guess){
+    if(serverResponse =="ok"){
+      this.score+=guess.length
     }
-    $result.text(score)
-  });
-
-  setTimeout(endGame, 10000);
-
-  function endGame() {
-    $submitButton.prop("disabled", true);
-    $gameOverMsg.text("Time is out");
-    sendScore(score);
+    $('#result').text(this.score)
   }
 
-  async function sendScore(score) {
-    let json = { score }
-    await axios.post(`${BASE_URL}/send-score`, json);
+  async sendScore(){
+
+      let json = { score: this.score }
+      await axios.post(`${BASE_URL}/send-score`, json);
   }
-    
-});
+
+  async handleButton(e){
+    e.preventDefault();
+    $guessInput = $('#guess');
+    let guess = $guessInput.val();
+    let serverResponse = sendGuess(guess)
+    $guessInput.val("")
+    this.updateScore(serverResponse, guess)
+  }
+
+  endGame() {
+    $('#submit').prop("disabled", true);
+    $('#gameOverMsg').text("Time is out");
+    this.sendScore(this.score);
+  }
+
+}
+boggleGame = new BoggleGame(60000);
+
+
