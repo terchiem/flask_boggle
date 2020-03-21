@@ -20,9 +20,17 @@ $(function() {
     $result.text(score)
   });
 
-  setTimeout(function(){
-    $submitButton.prop("disabled", true)
-    $gameOverMsg.text("Time is out")
-    }, 6000)
+  setTimeout(endGame, 10000);
+
+  function endGame() {
+    $submitButton.prop("disabled", true);
+    $gameOverMsg.text("Time is out");
+    sendScore(score);
+  }
+
+  async function sendScore(score) {
+    let json = { score }
+    await axios.post(`${BASE_URL}/send-score`, json);
+  }
     
 });

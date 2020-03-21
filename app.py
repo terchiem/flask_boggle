@@ -14,8 +14,11 @@ def show_home_page():
     """ Show game board """
 
     session["board"] = boggle_game.make_board()
+    high_score = session.get('high_score', 0)
 
-    return render_template("board.html",board=session["board"])
+    return render_template("board.html",
+                            board=session["board"],
+                            high_score=high_score)
 
 @app.route('/make-guess')
 def make_guess():
@@ -28,3 +31,19 @@ def make_guess():
 
     return jsonify(response)
 
+@app.route('/send-score', methods=["POST"])
+def send_score():
+    """ Receive high score and save to session """
+
+    score = request.json.get('score', 0)
+
+    if score > session.get('high_score', 0) :
+        session['high_score'] = score
+
+    session['times_played'] = session.get('times_played', 0) + 1
+    return jsonify({})
+
+
+# TODO: add number of times played
+# TODO: Step 7: refactor to OO, 
+#       docstrings, handle duplicate words
